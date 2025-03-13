@@ -1,0 +1,49 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    container_name: django_app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    env_file:  
+      - .ENV
+  
+
+  db:
+    image: postgres:13
+    container_name: postgres_db
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}'
+
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:6
+    container_name: redis_cache
+
+  celery:
+    build: .
+    container_name: celery_worker
+    command: celery -A sendify worker --loglevel=info
+    depends_on:
+      - redis
+      - db
+
+  flower:
+    build: .
+    container_name: flower_dashboard
+    command: celery -A sendify flower
+    ports:
+      - "5555:5555"
+    depends_on:
+      - celery
