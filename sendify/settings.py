@@ -7,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load environment variables from .env file
 env = environ.Env()
-environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+environ.Env.read_env(os.path.join(BASE_DIR, ".ENV"))
 
 SECRET_KEY = env("DJANGO_SECRET_KEY", default="fallback-secret")
 DEBUG = env.bool("DEBUG", default=False)
@@ -17,12 +17,24 @@ ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS]
 
 # Database Configuration
 DATABASE_URL = env("DATABASE_URL", default=None)
+
 if DATABASE_URL:
     DATABASES = {
         'default': dj_database_url.config(default=DATABASE_URL)
     }
 else:
-    print("⚠️ WARNING: No DATABASE_URL environment variable set, and so no databases setup")
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': env("POSTGRES_DB", default="postgres"),
+            'USER': env("POSTGRES_USER", default="postgres"),
+            'PASSWORD': env("POSTGRES_PASSWORD", default=""),
+            'HOST': env("POSTGRES_HOST", default="localhost"),
+            'PORT': env("POSTGRES_PORT", default="5432"),
+        }
+    }
+
+    print("⚠️ WARNING: No DATABASE_URL set, using fallback PostgreSQL config.")
 
 
 INSTALLED_APPS = [
@@ -126,6 +138,7 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS  = False
 SECURE_FRAME_DENY               = False
 
 # Redis as Celery broker
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = 'redis://redis_cache:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis_cache:6379/0'
+
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
