@@ -1,15 +1,28 @@
 import os
+import environ
 from pathlib import Path
-BASE_DIR = Path(__file__).resolve().parent.parent
 import dj_database_url
 
-ENV = os.getenv('DJANGO_ENV','development')
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-    
-SECRET_KEY =  os.getenv('DJANGO_SECRET_KEY')
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
-ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS] 
-DEBUG = os.getenv('DEBUG')
+# Load environment variables from .env file
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+
+SECRET_KEY = env("DJANGO_SECRET_KEY", default="fallback-secret")
+DEBUG = env.bool("DEBUG", default=False)
+
+ALLOWED_HOSTS = env("ALLOWED_HOSTS", default="localhost,127.0.0.1").split(",")
+ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS]
+
+# Database Configuration
+DATABASE_URL = env("DATABASE_URL", default=None)
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.config(default=DATABASE_URL)
+    }
+else:
+    print("⚠️ WARNING: No DATABASE_URL environment variable set, and so no databases setup")
 
 
 INSTALLED_APPS = [
@@ -58,9 +71,7 @@ WSGI_APPLICATION = 'sendify.wsgi.application'
 
 
 
-DATABASES = {
-    'default': dj_database_url.config(default=os.getenv("DATABASE_URL"))
-}
+
 
 
 AUTH_PASSWORD_VALIDATORS = [

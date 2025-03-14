@@ -8,7 +8,7 @@ from django.conf.urls.i18n import i18n_patterns
 urlpatterns = [
     
     path('admin/', admin.site.urls),
-    path('', include('home.urls',namespace='homepage')),  
+    path('', include('home.urls',namespace='home')),  
    
 ]
 if settings.DEBUG:
