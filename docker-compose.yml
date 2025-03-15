@@ -1,3 +1,4 @@
+version: '3.8'
 
 services:
   web:
@@ -6,35 +7,49 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
-      - redis
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
     env_file:  
       - .ENV
-  
 
   db:
     image: postgres:13
     container_name: postgres_db
-
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:6
     container_name: redis_cache
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   celery:
     build: .
     container_name: celery_worker
+    user: nobody
     command: celery -A sendify worker --loglevel=info
     depends_on:
-      - redis
-      - db
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    env_file:
+      - .ENV
 
   flower:
     build: .
@@ -43,4 +58,7 @@ services:
     ports:
       - "5555:5555"
     depends_on:
-      - celery
+      celery:
+        condition: service_started
+    env_file:
+      - .ENV

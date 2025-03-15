@@ -119,13 +119,13 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' 
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'ogingabrian2017@gmail.com'
-EMAIL_HOST_PASSWORD =  'xtfzlyicegpxjnho' 
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'Flexipay Team <noreply@sendify.com>'
+EMAIL_BACKEND = env("EMAIL_BACKEND")
+EMAIL_HOST = env("EMAIL_HOST", default="smtp.gmail.com") 
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD =  env("EMAIL_HOST_PASSWORD")
+EMAIL_PORT = env("EMAIL_PORT", default=587)
+EMAIL_USE_TLS = env("EMAIL_USE_TLS", default=True)
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")
 
 CORS_REPLACE_HTTPS_REFERER      = False
 HOST_SCHEME                     = "https://"
@@ -138,7 +138,6 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS  = False
 SECURE_FRAME_DENY               = False
 
 # Redis as Celery broker
-CELERY_BROKER_URL = 'redis://redis_cache:6379/0'
-CELERY_RESULT_BACKEND = 'redis://redis_cache:6379/0'
-
+CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="redis://redis:6379/0")
+CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND", default="redis://redis:6379/0")
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
